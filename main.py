@@ -2,11 +2,13 @@ import os
 import django
 import tkinter as tk
 from tkinter import *
+from tkinter import ttk
 import traceback
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mogli.settings')
 django.setup()
 from mogli.models import Admin as AdminModel
+from mogli.models import Product
 
 session = []
 
@@ -64,17 +66,22 @@ class MenuBar(tk.Frame):
 
     def show(self):
         menubar = Menu(self)
-        filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_command(label="New", command=self.do_nothing)
-        filemenu.add_command(label="Open", command=self.do_nothing)
-        filemenu.add_command(label="Save", command=self.do_nothing)
-        filemenu.add_command(label="Save as", command=self.do_nothing)
-        filemenu.add_command(label="Close", command=self.do_nothing)
+        mainmenu = Menu(menubar, tearoff=0)
+        productmenu = Menu(menubar, tearoff=0)
+        historymenu = Menu(menubar, tearoff=0)
 
-        filemenu.add_separator()
+        productmenu.add_command(label="Add products", command=self.create_product)
+        productmenu.add_command(label="View products", command=self.view_products)
+        productmenu.add_separator()
+        productmenu.add_command(label="Logout", command=self.do_nothing)
 
-        filemenu.add_command(label="Exit", command=self.do_nothing)
-        menubar.add_cascade(label="File", menu=filemenu)
+        historymenu.add_command(label="View transaction history", command=self.do_nothing)
+
+        mainmenu.add_command(label="Logout", command=self.do_nothing)
+
+        menubar.add_cascade(label="Main", menu=mainmenu)
+        menubar.add_cascade(label="Products", menu=productmenu)
+        menubar.add_cascade(label="History", menu=historymenu)
 
         Label(self, text="Hello").pack()
 
@@ -87,11 +94,95 @@ class MenuBar(tk.Frame):
         button = Button(create_product_screen, text="Hello, world!")
         button.pack()
 
+    def view_products(self):
+        width, height = (810, 350)
+
+        window = tk.Toplevel(self.controller)
+        window.title("Products")
+        window.geometry(f"{width}x{height}")
+
+        cols = ('Product ID', 'Product', 'Cost', 'IMAGE')
+
+        listBox = ttk.Treeview(window, columns=cols, show='headings')
+
+        for col in cols:
+            listBox.heading(col, text=col)
+        listBox.grid(row=2, column=5, columnspan=2)
+
+        for product in Product.objects.all():
+            listBox.insert("", "end", values=(
+                product.id_product, product.product_name,
+                str(product.cost), product.image
+            ))
+
+    def create_product(self):
+        width, height = (310, 250)
+
+        window = tk.Toplevel(self.controller)
+        window.title("Create New Product")
+        window.geometry(f"{width}x{height}")
+
+        self.product_id = StringVar()
+        self.product_name = StringVar()
+        self.cost = StringVar()
+        self.image = StringVar()
+
+        id_label = Label(window, text="Product ID: ")
+        id_label.grid(row=2, column=0)
+
+        self.id_entry = Entry(window, textvariable=self.product_id)
+        self.id_entry.grid(row=2, column=1, pady=10)
+
+        name_label = Label(window, text="Name: ")
+        name_label.grid(row=5, column=0, pady=10)
+
+        self.name_entry = Entry(window)
+        self.name_entry.grid(row=5, column=1, pady=10)
+
+        cost_label = Label(window, text="Cost: ")
+        cost_label.grid(row=7, column=0, pady=10)
+
+        self.cost_entry = Entry(window)
+        self.cost_entry.grid(row=7, column=1, pady=10)
+
+        image_label = Label(window, text="Image: ")
+        image_label.grid(row=9, column=0, pady=10)
+
+        self.image_entry = Entry(window)
+        self.image_entry.grid(row=9, column=1, pady=10)
+
+        create_button = Button(window, text="Create", command=self.save_product)
+        create_button.grid(row=12, column=1, pady=20)
+
+        self.info_label = Label(window, text="")
+        self.info_label.grid(row=13, column=1, pady=5)
+
+    def save_product(self):
+        _id = self.id_entry.get()
+        name = self.name_entry.get()
+        cost = self.cost_entry.get()
+        image = self.image_entry.get()
+
+        if _id and name and cost and image:
+            product = Product(
+                id_product=_id, product_name=name,
+                cost=float(cost), image=image
+            )
+            product.save()
+            self.id_entry.delete(0, END)
+            self.name_entry.delete(0, END)
+            self.cost_entry.delete(0, END)
+            self.image_entry.delete(0, END)
+
+            print(f"Product {name} registered correctly")
+        else:
+            print("Empty inputs")
+
 class AdminPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        title = Label(self, text="Admin Page", font=LARGE_FONT)
+        title = Label(self, text="", font=LARGE_FONT)
         title.pack(padx=10, pady=10)
 
 class Admin(tk.Frame):
