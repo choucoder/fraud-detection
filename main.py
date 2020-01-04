@@ -12,6 +12,7 @@ session = []
 
 LARGE_FONT = ("Verdana", 12)
 
+
 class Application(tk.Tk):
 
     def __init__(self, *args, **kwargs):
@@ -38,7 +39,8 @@ class Application(tk.Tk):
     def show_frame(self, cont):
         frame = self.frames[cont]
         frame.tkraise()
-        
+
+
 class MainPage(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -159,6 +161,7 @@ class Admin(tk.Frame):
         self.password_entry.delete(0, END)
         print(f"Login: {username} - {password}")
 
+
 class AdminRegister(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -207,6 +210,7 @@ class AdminRegister(tk.Frame):
             print("Empty fields*")
 
         print(f"{username} - {password}")
+
 
 if __name__ == '__main__':
     app = Application()
