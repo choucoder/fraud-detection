@@ -11,6 +11,7 @@ session = []
 
 LARGE_FONT = ("Verdana", 12)
 
+
 class Application(tk.Tk):
 
     def __init__(self, *args, **kwargs):
@@ -37,7 +38,8 @@ class Application(tk.Tk):
     def show_frame(self, cont):
         frame = self.frames[cont]
         frame.tkraise()
-        
+
+
 class MainPage(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -53,6 +55,7 @@ class MainPage(tk.Frame):
             command=lambda: controller.show_frame(Admin))
         button2.pack(padx=5, pady=5)
 
+# Admin views
 class AdminWindow(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -79,6 +82,7 @@ class AdminWindow(tk.Frame):
         test = TopLevel(self.controller)
         button = Button(test, text="Hello, world!")
         button.pack()
+
 
 class Admin(tk.Frame):
 
@@ -144,6 +148,7 @@ class Admin(tk.Frame):
         self.password_entry.delete(0, END)
         print(f"Login: {username} - {password}")
 
+
 class AdminRegister(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -192,6 +197,7 @@ class AdminRegister(tk.Frame):
             print("Empty fields*")
 
         print(f"{username} - {password}")
+
 
 if __name__ == '__main__':
     app = Application()
