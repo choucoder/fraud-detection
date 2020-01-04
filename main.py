@@ -9,6 +9,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mogli.settings')
 django.setup()
 from mogli.models import Admin as AdminModel
 from mogli.models import Product
+from mogli.models import TransactionHistory
 
 session = []
 
@@ -72,10 +73,9 @@ class MenuBar(tk.Frame):
 
         productmenu.add_command(label="Add products", command=self.create_product)
         productmenu.add_command(label="View products", command=self.view_products)
-        productmenu.add_separator()
-        productmenu.add_command(label="Logout", command=self.do_nothing)
 
-        historymenu.add_command(label="View transaction history", command=self.do_nothing)
+        historymenu.add_command(label="View transaction history", 
+            command=self.view_transaction_history)
 
         mainmenu.add_command(label="Logout", command=self.do_nothing)
 
@@ -93,6 +93,27 @@ class MenuBar(tk.Frame):
         create_product_screen.geometry("300x250")
         button = Button(create_product_screen, text="Hello, world!")
         button.pack()
+
+    def view_transaction_history(self):
+        width, height = (1000, 256)
+
+        window = tk.Toplevel(self.controller)
+        window.title("Transaction history")
+        window.geometry(f"{width}x{height}")
+
+        cols = ('Username', 'Email', 'Product Name', 'Cost', 'IP Address')
+
+        listBox = ttk.Treeview(window, columns=cols, show='headings')
+
+        for col in cols:
+            listBox.heading(col, text=col)
+        listBox.grid(row=2, column=5, columnspan=2)
+
+        for product in TransactionHistory.objects.all():
+            listBox.insert("", "end", values=(
+                product.id_product, product.product_name,
+                str(product.cost), product.image
+            ))
 
     def view_products(self):
         width, height = (810, 350)
