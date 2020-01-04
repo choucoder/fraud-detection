@@ -2,6 +2,7 @@ import os
 import django
 import tkinter as tk
 from tkinter import *
+import traceback
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mogli.settings')
 django.setup()
@@ -57,7 +58,38 @@ class MainPage(tk.Frame):
             command=lambda: controller.show_frame(Admin))
         button2.pack(padx=5, pady=5)
 
-# General abstract login view
+class MenuBar(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+
+    def show(self):
+        menubar = Menu(self)
+        filemenu = Menu(menubar, tearoff=0)
+        filemenu.add_command(label="New", command=self.do_nothing)
+        filemenu.add_command(label="Open", command=self.do_nothing)
+        filemenu.add_command(label="Save", command=self.do_nothing)
+        filemenu.add_command(label="Save as", command=self.do_nothing)
+        filemenu.add_command(label="Close", command=self.do_nothing)
+
+        filemenu.add_separator()
+
+        filemenu.add_command(label="Exit", command=self.do_nothing)
+        menubar.add_cascade(label="File", menu=filemenu)
+
+        Label(self, text="Hello").pack()
+
+        self.controller.config(menu=menubar)
+
+    def do_nothing(self):
+        create_product_screen = tk.Toplevel(self.controller)
+        create_product_screen.title("New Product")
+        create_product_screen.geometry("300x250")
+        button = Button(create_product_screen, text="Hello, world!")
+        button.pack()
+
+
 class Login(tk.Frame):
 
     def __init__(self, parent, controller, type, model, register_view, return_view):
@@ -67,10 +99,7 @@ class Login(tk.Frame):
         self.username = StringVar()
         self.password = StringVar()
         self.controller = controller
-        self.type = type
-        self.model = model
-        self.register_view = register_view
-        self.return_view = return_view
+        self.menuBar = MenuBar(parent, controller)
 
         label = Label(self, text=f"Login {self.type}", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
@@ -103,6 +132,7 @@ class Login(tk.Frame):
         register_btn = Button(self, text="Register",
             command=lambda: controller.show_frame(self.register_view))
         register_btn.pack(side=tk.RIGHT)
+        self.controller = controller
 
     def login(self):
         username = self.username_entry.get()
@@ -113,13 +143,14 @@ class Login(tk.Frame):
                 target = self.model.objects.get(username=username)
                 if target.password == password:
                     print("Login")
+                    self.menuBar.show()
+                    self.controller.show_frame(AdminPage)
                     session.append((username, 1))
-                    self.controller.show_frame(self.return_view)
                 else:
                     print("Password incorrect")
 
-            except mogli.models.DoesNotExist:
-                print("Admin doesn't exist")
+            except Exception as e:
+                print(f"Admin doesn't exist: {e}")
         else:
             print(f"Field username empty")
 
@@ -127,7 +158,17 @@ class Login(tk.Frame):
         self.password_entry.delete(0, END)
         print(f"Login: {username} - {password}")
 
+
 # Admin views
+
+class AdminPage(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        title = Label(self, text="Admin Page", font=LARGE_FONT)
+        title.pack(padx=10, pady=10)
+
+    
 class AdminWindow(tk.Frame):
 
     def __init__(self, parent, controller):
