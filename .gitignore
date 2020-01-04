@@ -1,0 +1,5 @@
+*.docx
+*.mp4
+app/
+.vscode/
+__pycache__/
