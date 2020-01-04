@@ -28,7 +28,7 @@ class Application(tk.Tk):
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
-        self.geometry("1300x400")
+        self.geometry("720x300")
         self.title("Fraud detection System")
         self.frames = {}
 
