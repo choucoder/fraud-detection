@@ -2,6 +2,7 @@ import os
 import django
 import tkinter as tk
 from tkinter import *
+import traceback
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mogli.settings')
 django.setup()
@@ -27,7 +28,7 @@ class Application(tk.Tk):
         self.title("Fraud detection System")
         self.frames = {}
 
-        for F in (MainPage, Admin, AdminRegister, AdminWindow):
+        for F in (MainPage, Admin, AdminRegister, AdminPage):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -53,13 +54,14 @@ class MainPage(tk.Frame):
             command=lambda: controller.show_frame(Admin))
         button2.pack(padx=5, pady=5)
 
-class AdminWindow(tk.Frame):
+class MenuBar(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        self.controller = Tk()
+        self.controller = controller
 
-        menubar = Menu(self.controller)
+    def show(self):
+        menubar = Menu(self)
         filemenu = Menu(menubar, tearoff=0)
         filemenu.add_command(label="New", command=self.do_nothing)
         filemenu.add_command(label="Open", command=self.do_nothing)
@@ -72,13 +74,23 @@ class AdminWindow(tk.Frame):
         filemenu.add_command(label="Exit", command=self.do_nothing)
         menubar.add_cascade(label="File", menu=filemenu)
 
+        Label(self, text="Hello").pack()
+
         self.controller.config(menu=menubar)
-        Label(self, text="Hola login").pack()
 
     def do_nothing(self):
-        test = TopLevel(self.controller)
-        button = Button(test, text="Hello, world!")
+        create_product_screen = tk.Toplevel(self.controller)
+        create_product_screen.title("New Product")
+        create_product_screen.geometry("300x250")
+        button = Button(create_product_screen, text="Hello, world!")
         button.pack()
+
+class AdminPage(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        title = Label(self, text="Admin Page", font=LARGE_FONT)
+        title.pack(padx=10, pady=10)
 
 class Admin(tk.Frame):
 
@@ -90,6 +102,7 @@ class Admin(tk.Frame):
         self.username = StringVar()
         self.password = StringVar()
         self.controller = controller
+        self.menuBar = MenuBar(parent, controller)
 
         username_label = Label(self, text="Username *", width="20")
         username_label.pack()
@@ -120,6 +133,7 @@ class Admin(tk.Frame):
         register_btn = Button(self, text="Register",
             command=lambda: controller.show_frame(AdminRegister))
         register_btn.pack(side=tk.RIGHT)
+        self.controller = controller
 
     def login(self):
         username = self.username_entry.get()
@@ -130,13 +144,14 @@ class Admin(tk.Frame):
                 admin = AdminModel.objects.get(username=username)
                 if admin.password == password:
                     print("Login")
+                    self.menuBar.show()
+                    self.controller.show_frame(AdminPage)
                     session.append((username, 1))
-                    self.controller.show_frame(AdminWindow)
                 else:
                     print("Password incorrect")
 
-            except mogli.models.DoesNotExist as e:
-                print("Admin doesn't exist")
+            except Exception as e:
+                print(f"Admin doesn't exist: {e}")
         else:
             print(f"Field username empty")
 
