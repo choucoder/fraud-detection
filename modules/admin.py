@@ -65,8 +65,8 @@ class MenuBar(tk.Frame):
 
         for history in TransactionHistory.objects.all():
             listBox.insert("", "end", values=(
-                history.user_id.username, history.user_id.email_id,
-                history.id_product.product_name, history.cost,
+                history.user.username, history.user.email_id,
+                history.product.product_name, history.cost,
                 history.ip_address, history.created_at
             ))
 
@@ -158,7 +158,8 @@ class MainView(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        title = Label(self, text="", font=LARGE_FONT)
+        message = f"Welcome Admin!"
+        title = Label(self, text=message, font=LARGE_FONT)
         title.pack(padx=10, pady=10)
 
 class LoginView(tk.Frame):
