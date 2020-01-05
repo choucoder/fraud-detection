@@ -1,4 +1,5 @@
 import os
+import urllib.request
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
@@ -15,6 +16,14 @@ from mogli.models import User as UserModel, Product, TransactionHistory
 session = []
 session2 = {}
 LARGE_FONT = ("Verdana", 12)
+
+def getipaddress():
+    try:
+        ip_address = urllib.request.urlopen('https://ident.me').read().decode('utf8')
+    except:
+        import socket
+        ip_address = socket.gethostbyname(socket.gethostname())
+    return ip_address
 
 # Base Login
 class Login(Frame):
@@ -255,13 +264,14 @@ class MenuBar(tk.Frame):
         product = Product.objects.get(id_product=product_id)
         user = session2['user']
         credit_card = self.credit_card_entry.get()
+        ip_address = getipaddress()
 
         print(f"{user} buy product with id {product} using credit card {credit_card}")
 
         transaction = TransactionHistory(
             product=product,
             cost=product.cost,
-            ip_address=user.ip_address,
+            ip_address=ip_address,
             user=user
         )
 
@@ -279,7 +289,6 @@ class UserLogin(Login):
     def __init__(self, parent, controller):
 
         super().__init__(parent, controller, "User", UserModel, UserRegister, UserHome)
-
 
 class UserRegister(Frame):
 
@@ -329,13 +338,6 @@ class UserRegister(Frame):
 
         self.amount_limit_entry = Entry(self, textvariable=amount_limit)
         self.amount_limit_entry.pack()
-
-        # IP Address
-        ip_address_label = Label(self, text="IP address *", width="30")
-        ip_address_label.pack()
-
-        self.ip_address_entry = Entry(self, textvariable=ip_address)
-        self.ip_address_entry.pack()
         
         Label(self, text="").pack()
 
@@ -353,7 +355,7 @@ class UserRegister(Frame):
         phone = self.phone_entry.get()
         email = self.email_entry.get()
         amount_limit = self.amount_limit_entry.get()
-        ip_address = self.ip_address_entry.get()
+        ip_address = getipaddress()
 
         if username and password and phone and email and amount_limit and ip_address:
             try:
