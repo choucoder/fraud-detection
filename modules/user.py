@@ -92,6 +92,25 @@ class Login(Frame):
         print(f"Login: {username} - {password}")
 
 
+class PopUp(tk.Toplevel):
+
+    def __init__(self, message):
+        width, height = (400, 200)
+        super().__init__()
+        self.title("Message")
+        self.geometry(f"{width}x{height}")
+        self.attributes("-topmost", True)
+
+        space = Label(self, text='', height='5')
+        space.pack()
+
+        label = Label(self, text=message)
+        label.pack()
+
+        self.lift()
+
+
+
 # The Menubar
 class MenuBar(tk.Frame):
 
@@ -143,8 +162,8 @@ class MenuBar(tk.Frame):
 
         for history in TransactionHistory.objects.filter(user=session2['user']):
             listBox.insert("", "end", values=(
-                history.user_id.username, history.user_id.email_id,
-                history.id_product.product_name, history.cost,
+                history.user.username, history.user.email_id,
+                history.product.product_name, history.cost,
                 history.ip_address, history.created_at
             ))
 
@@ -238,7 +257,21 @@ class MenuBar(tk.Frame):
         credit_card = self.credit_card_entry.get()
 
         print(f"{user} buy product with id {product} using credit card {credit_card}")
-        print("fiinish buying working properly!!")
+
+        transaction = TransactionHistory(
+            product=product,
+            cost=product.cost,
+            ip_address=user.ip_address,
+            user=user
+        )
+
+        try:
+            transaction.save()
+            PopUp("Transaction completed correctly.")
+        except Exception:
+            PopUp("Transaction failed. Verify your data and try again.")
+
+        
 
 # User views
 class UserLogin(Login):
@@ -353,7 +386,7 @@ class UserHome(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = Label(self, text="Welcome User!!", font=LARGE_FONT)
+        label = Label(self, text="Welcome User!", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
 
         self.menu_bar = MenuBar(parent, controller)

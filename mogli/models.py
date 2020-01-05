@@ -40,9 +40,10 @@ class TransactionHistory(models.Model):
 
     id_history = models.AutoField(primary_key=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    cost = models.FloatField()
-    ip_address = models.GenericIPAddressField()
+    cost = models.FloatField(null=False)
+    ip_address = models.GenericIPAddressField(null=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
+    credit_card_used = models.CharField(max_length=16, null=False, default='')
     created_at = models.DateTimeField(default=datetime.now())
 
 # First put in settings INSTALLED_APPS the name of app (mogli)
