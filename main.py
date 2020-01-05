@@ -30,11 +30,16 @@ class Application(tk.Tk):
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
-        self.geometry("720x300")
+        self.geometry("720x400")
         self.title("Fraud detection System")
         self.frames = {}
 
-        for F in (MainPage, AdminLogin, AdminRegister, AdminWindow, UserLogin):
+        views = (
+            MainPage,
+            AdminLogin, AdminRegister, AdminWindow,
+            UserLogin, UserRegister, UserWindow
+            )
+        for F in views:
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -266,7 +271,7 @@ class Login(tk.Frame):
                 if target.password == password:
                     print("Login")
                     self.menuBar.show()
-                    self.controller.show_frame(AdminPage)
+                    self.controller.show_frame(self.return_view)
                     session.append((username, 1))
                 else:
                     print("Password incorrect")
@@ -354,7 +359,7 @@ class AdminRegister(tk.Frame):
         login_btn.pack()
 
         register_btn = Button(self, text="Back to Login",
-            command=lambda: controller.show_frame(AdminLogin))
+            command=lambda: controller.show_frame(UserLogin))
         register_btn.pack(side=tk.RIGHT, padx=5, pady=5)
     
     def register(self):
@@ -386,14 +391,110 @@ class UserLogin(Login):
 class UserRegister(tk.Frame):
 
     def __init__(self, parent, controller):
-        pass
+        tk.Frame.__init__(self, parent)
+        label = Label(self, text="Register User", font=LARGE_FONT)
+        label.pack(pady=10, padx=10)
+        
+        username = StringVar()
+        password = StringVar()
+        phone = StringVar()
+        email = StringVar()
+        amount_limit = StringVar()
+        ip_address = StringVar()
+
+        # Username
+        username_label = Label(self, text="Username *", width="30")
+        username_label.pack()
+
+        self.username_entry = Entry(self, textvariable=username)
+        self.username_entry.pack()
+
+        # Password
+        password_label = Label(self, text="Password *", width="30")
+        password_label.pack()
+
+        self.password_entry = Entry(self, textvariable=password, show="*")
+        self.password_entry.pack()
+
+        # Phone number
+        phone_label = Label(self, text="Phone *", width="30")
+        phone_label.pack()
+
+        self.phone_entry = Entry(self, textvariable=phone)
+        self.phone_entry.pack()
+
+        # Email
+        email_label = Label(self, text="Email *", width="30")
+        email_label.pack()
+
+        self.email_entry = Entry(self, textvariable=email)
+        self.email_entry.pack()
+
+        # Amount limit
+        amount_limit_label = Label(self, text="Amount limit *", width="30")
+        amount_limit_label.pack()
+
+        self.amount_limit_entry = Entry(self, textvariable=amount_limit)
+        self.amount_limit_entry.pack()
+
+        # IP Address
+        ip_address_label = Label(self, text="IP address *", width="30")
+        ip_address_label.pack()
+
+        self.ip_address_entry = Entry(self, textvariable=ip_address)
+        self.ip_address_entry.pack()
+        
+        Label(self, text="").pack()
+
+        login_btn = Button(self, text="Sign in", height="1", width="17", 
+            command=self.register)
+        login_btn.pack()
+
+        register_btn = Button(self, text="Back to Login",
+            command=lambda: controller.show_frame(AdminLogin))
+        register_btn.pack(side=tk.RIGHT, padx=5, pady=5)
+    
+    def register(self):
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        phone = self.phone_entry.get()
+        email = self.email_entry.get()
+        amount_limit = self.amount_limit_entry.get()
+        ip_address = self.ip_address_entry.get()
+
+        if username and password and phone and email and amount_limit and ip_address:
+            try:
+                user = UserModel(
+                    username=username,
+                    password=password,
+                    phone_number=phone,
+                    email_id=email,
+                    amount_limit=amount_limit,
+                    ip_address=ip_address)
+                user.save()
+
+                self.username_entry.delete(0, END)
+                self.password_entry.delete(0, END)
+                self.phone_entry.delete(0, END)
+                self.email_entry.delete(0, END)
+                self.amount_limit_entry.delete(0, END)
+                self.ip_address_entry.delete(0, END)
+
+            except Exception as e:
+                print("Some fields could't be totally validated or...")
+                print(f"{username} already exist: {e}")
+        else:
+            print("Empty fields*")
+
+        print(f"{username} - {password}")
 
 
 class UserWindow(tk.Frame):
 
     def __init__(self, parent, controller):
-        pass
-
+        tk.Frame.__init__(self, parent)
+        label = Label(self, text="Welcome User!!", font=LARGE_FONT)
+        label.pack(pady=10, padx=10)
 
 
 if __name__ == '__main__':
