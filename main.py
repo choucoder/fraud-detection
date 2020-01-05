@@ -33,7 +33,7 @@ class Application(tk.Tk):
         self.title("Fraud detection System")
         self.frames = {}
 
-        for F in (MainPage, Admin, AdminRegister, AdminWindow, User):
+        for F in (MainPage, AdminLogin, AdminRegister, AdminWindow, UserLogin):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -53,11 +53,11 @@ class MainPage(tk.Frame):
         label.pack(pady=10, padx=10)
 
         button = tk.Button(self, text="User", height="2", width="30",
-            command=lambda: controller.show_frame(User))
+            command=lambda: controller.show_frame(UserLogin))
         button.pack(padx=5, pady=5)
 
         button2 = tk.Button(self, text="Admin", height="2", width="30",
-            command=lambda: controller.show_frame(Admin))
+            command=lambda: controller.show_frame(AdminLogin))
         button2.pack(padx=5, pady=5)
 
 class MenuBar(tk.Frame):
@@ -189,16 +189,20 @@ class AdminPage(tk.Frame):
 
 class Login(tk.Frame):
 
-    def __init__(self, parent, controller, type, model, register_view, return_view):
+    def __init__(self, parent, controller, kind, model, register_view, return_view):
         tk.Frame.__init__(self, parent)
         
         
         self.username = StringVar()
         self.password = StringVar()
         self.controller = controller
+        self.kind = kind
+        self.model = model
+        self.register_view = register_view
+        self.return_view = return_view
         self.menuBar = MenuBar(parent, controller)
 
-        label = Label(self, text=f"Login {self.type}", font=LARGE_FONT)
+        label = Label(self, text=f"Login {self.kind}", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
         username_label = Label(self, text="Username *", width="20")
         username_label.pack()
@@ -294,7 +298,7 @@ class AdminWindow(tk.Frame):
         button.pack()
 
 
-class Admin(Login):
+class AdminLogin(Login):
 
     def __init__(self, parent, controller):
         super().__init__(parent, controller, "Admin", AdminModel, AdminRegister, AdminWindow)
@@ -329,7 +333,7 @@ class AdminRegister(tk.Frame):
         login_btn.pack()
 
         register_btn = Button(self, text="Back to Login",
-            command=lambda: controller.show_frame(Admin))
+            command=lambda: controller.show_frame(AdminLogin))
         register_btn.pack(side=tk.RIGHT, padx=5, pady=5)
     
     def register(self):
@@ -351,7 +355,7 @@ class AdminRegister(tk.Frame):
 
 
 # User views
-class User(Login):
+class UserLogin(Login):
 
     def __init__(self, parent, controller):
 
