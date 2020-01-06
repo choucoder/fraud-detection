@@ -13,6 +13,7 @@ from .pages import MainPage
 from mogli.models import User as UserModel, Product, TransactionHistory, UserCard
 
 
+times = 0
 session = []
 session2 = {}
 LARGE_FONT = ("Verdana", 12)
@@ -268,20 +269,24 @@ class MenuBar(tk.Frame):
 
         print(f"{user} buy product with id {product} using credit card {credit_card}")
 
-        transaction = TransactionHistory(
-            product=product,
-            cost=product.cost,
-            ip_address=ip_address,
-            user=user
-        )
-
-        try:
-            transaction.save()
-            PopUp("Transaction completed correctly.")
-        except Exception:
-            PopUp("Transaction failed. Verify your data and try again.")
-
+        userCard = UserCard.objects.get(user=user)
         
+        if userCard.credit_card_number == credit_card:
+            transaction = TransactionHistory(
+                product=product,
+                cost=product.cost,
+                ip_address=ip_address,
+                user=user
+            )
+
+            try:
+                transaction.save()
+                PopUp("Transaction completed correctly.")
+            except Exception:
+                PopUp("Transaction failed. Verify your data and try again.")
+        else:
+            times += 1
+            PopUp(f"Credit card number wrong, you have {times} intents") 
 
 # User views
 class UserLogin(Login):
