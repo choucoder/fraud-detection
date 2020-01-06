@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import datetime
+from django.utils.timezone import now
 
 class Admin(models.Model):
     username = models.CharField(max_length=100, primary_key=True)
@@ -30,6 +31,7 @@ class UserCard(models.Model):
     exp_month = models.IntegerField()
     exp_year = models.IntegerField()
     cvv = models.IntegerField()
+    status = models.IntegerField(default=1)
 
 class Product(models.Model):
 
@@ -51,7 +53,7 @@ class TransactionHistory(models.Model):
     ip_address = models.GenericIPAddressField(null=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     credit_card_used = models.CharField(max_length=16, null=False, default='')
-    created_at = models.DateTimeField(default=datetime.now())
+    created_at = models.DateTimeField(default=now())
 
 # First put in settings INSTALLED_APPS the name of app (mogli)
 # Seconds make python3.7 manage.py makemigrations mogli

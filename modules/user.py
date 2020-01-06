@@ -13,7 +13,7 @@ from .pages import MainPage
 from mogli.models import User as UserModel, Product, TransactionHistory, UserCard
 
 
-times = 0
+times = 3
 session = []
 session2 = {}
 LARGE_FONT = ("Verdana", 12)
@@ -260,34 +260,42 @@ class MenuBar(tk.Frame):
         buywin.lift()
 
     def finish_buying(self):
-
+        global times
         product_id = self.product_id
         product = Product.objects.get(id_product=product_id)
         user = session2['user']
         credit_card = self.credit_card_entry.get()
         ip_address = getipaddress()
-
-        print(f"{user} buy product with id {product} using credit card {credit_card}")
-
         userCard = UserCard.objects.get(user=user)
         
-        if userCard.credit_card_number == credit_card:
-            transaction = TransactionHistory(
-                product=product,
-                cost=product.cost,
-                ip_address=ip_address,
-                user=user
-            )
-
-            try:
-                transaction.save()
-                PopUp("Transaction completed correctly.")
-            except Exception:
-                PopUp("Transaction failed. Verify your data and try again.")
+        if userCard.status == 0:
+            PopUp(f"User {user.username} has been blocked")
         else:
-            times += 1
-            PopUp(f"Credit card number wrong, you have {times} intents") 
+            if userCard.credit_card_number == credit_card and times > 0:
+                transaction = TransactionHistory(
+                    product=product,
+                    cost=product.cost,
+                    ip_address=ip_address,
+                    user=user
+                )
+                try:
+                    transaction.save()
+                    print(f"{user} buy product with id {product} using credit card {credit_card}")
+                    PopUp("Transaction completed correctly.")
+                except Exception:
+                    PopUp("Transaction failed. Verify your data and try again.")
+            else:
+                if times == 0:
+                    PopUp(f"User {user.username} has been blocked")
+                    userCard.status = 0
+                    userCard.save()
+                    times = 3
+                else:
+                    times -= 1
+                    PopUp(f"Credit card number wrong, you have {times} intents")
 
+        self.credit_card_entry.delete(0, END)
+        
 # User views
 class UserLogin(Login):
 
