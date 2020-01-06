@@ -321,8 +321,8 @@ class UserRegister(Frame):
 
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
-        label = Label(self, text="User", font=LARGE_FONT)
-        label.grid(row=0, column=0, pady=10, padx=10)
+        label = Label(self, text="Register user", font=LARGE_FONT)
+        label.grid(row=0, column=1, pady=15, padx=20)
         
         username = StringVar()
         password = StringVar()
@@ -368,10 +368,6 @@ class UserRegister(Frame):
         
         Label(self, text="").grid(row=6, column=2, pady=10)
 
-        ## Credit card
-        title_label = Label(self, text="Card", font=LARGE_FONT)
-        title_label.grid(row=0, column=2, pady=10, padx=40)
-
         # Card number
 
         self.card_entry = EntryWithPlaceholder(self, placeholder="CARD NUMBER")
@@ -396,7 +392,7 @@ class UserRegister(Frame):
 
         register_btn = Button(self, text="Back to Login",
             command=lambda: controller.show_frame(UserLogin))
-        register_btn.grid(row=7, column=3, padx=0, pady=10)
+        register_btn.grid(row=7, column=2, padx=0, pady=10)
     
     def register(self):
         username = self.username_entry.get()
@@ -413,37 +409,40 @@ class UserRegister(Frame):
         cvv = self.cvv_entry.get()
 
         if username and password and phone and email and amount_limit and ip_address:
-            try:
-                user = UserModel(
-                    username=username,
-                    password=password,
-                    phone_number=phone,
-                    email_id=email,
-                    amount_limit=amount_limit,
-                    ip_address=ip_address)
-                user.save()
-                ucard = UserCard(
-                    user=user,
-                    credit_card_number=card_number,
-                    exp_month=int(month),
-                    exp_year=int(year),
-                    cvv=cvv
-                )
-                ucard.save()
+            if len(card_number) == 16 and month and year and cvv:
+                try:
+                    user = UserModel(
+                        username=username,
+                        password=password,
+                        phone_number=phone,
+                        email_id=email,
+                        amount_limit=amount_limit,
+                        ip_address=ip_address)
+                    user.save()
+                    ucard = UserCard(
+                        user=user,
+                        credit_card_number=card_number,
+                        exp_month=int(month),
+                        exp_year=int(year),
+                        cvv=cvv
+                    )
+                    ucard.save()
 
-                self.username_entry.delete(0, END)
-                self.password_entry.delete(0, END)
-                self.phone_entry.delete(0, END)
-                self.email_entry.delete(0, END)
-                self.amount_limit_entry.delete(0, END)
-                self.card_entry.delete(0, END)
-                self.year_entry.delete(0, END)
-                self.month_entry.delete(0, END)
-                self.cvv_entry.delete(0, END)
+                    self.username_entry.delete(0, END)
+                    self.password_entry.delete(0, END)
+                    self.phone_entry.delete(0, END)
+                    self.email_entry.delete(0, END)
+                    self.amount_limit_entry.delete(0, END)
+                    self.card_entry.delete(0, END)
+                    self.year_entry.delete(0, END)
+                    self.month_entry.delete(0, END)
+                    self.cvv_entry.delete(0, END)
 
-            except Exception as e:
-                print("Some fields could't be totally validated or...")
-                print(f"{username} already exist: {e}")
+                except Exception as e:
+                    print("Some fields could't be totally validated or...")
+                    print(f"{username} already exist: {e}")
+            else:
+                print("Empty card fields")
         else:
             print("Empty fields*")
 
