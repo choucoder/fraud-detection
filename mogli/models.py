@@ -23,6 +23,13 @@ class User(models.Model):
 
         return f'User<{self.username}>'
 
+class UserCard(models.Model):
+    code = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
+    credit_card_number = models.CharField(max_length=16, unique=True, null=False)
+    exp_month = models.IntegerField()
+    exp_year = models.IntegerField()
+    cvv = models.IntegerField()
 
 class Product(models.Model):
 

@@ -10,7 +10,7 @@ django.setup()
 
 from .pages import MainPage
 
-from mogli.models import User as UserModel, Product, TransactionHistory
+from mogli.models import User as UserModel, Product, TransactionHistory, UserCard
 
 
 session = []
@@ -290,12 +290,39 @@ class UserLogin(Login):
 
         super().__init__(parent, controller, "User", UserModel, UserRegister, UserHome)
 
+class EntryWithPlaceholder(Entry):
+    def __init__(self, master=None, placeholder="PLACEHOLDER", color='grey'):
+        super().__init__(master)
+
+        self.placeholder = placeholder
+        self.placeholder_color = color
+        self.default_fg_color = self['fg']
+
+        self.bind("<FocusIn>", self.foc_in)
+        self.bind("<FocusOut>", self.foc_out)
+
+        self.put_placeholder()
+
+    def put_placeholder(self):
+        self.insert(0, self.placeholder)
+        self['fg'] = self.placeholder_color
+
+    def foc_in(self, *args):
+        if self['fg'] == self.placeholder_color:
+            self.delete('0', 'end')
+            self['fg'] = self.default_fg_color
+
+    def foc_out(self, *args):
+        if not self.get():
+            self.put_placeholder()
+
+
 class UserRegister(Frame):
 
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
-        label = Label(self, text="Register User", font=LARGE_FONT)
-        label.pack(pady=10, padx=10)
+        label = Label(self, text="User", font=LARGE_FONT)
+        label.grid(row=0, column=0, pady=10, padx=10)
         
         username = StringVar()
         password = StringVar()
@@ -305,49 +332,71 @@ class UserRegister(Frame):
         ip_address = StringVar()
 
         # Username
-        username_label = Label(self, text="Username *", width="30")
-        username_label.pack()
+        username_label = Label(self, text="Username: ", width="10")
+        username_label.grid(row=1, column=0, pady=10, padx=0)
 
         self.username_entry = Entry(self, textvariable=username)
-        self.username_entry.pack()
+        self.username_entry.grid(row=1, column=1, pady=10, sticky=W)
 
         # Password
-        password_label = Label(self, text="Password *", width="30")
-        password_label.pack()
+        password_label = Label(self, text="Password: ", width="10")
+        password_label.grid(row=2, column=0, pady=10, padx=0)
 
         self.password_entry = Entry(self, textvariable=password, show="*")
-        self.password_entry.pack()
+        self.password_entry.grid(row=2, column=1, pady=10)
 
         # Phone number
-        phone_label = Label(self, text="Phone *", width="30")
-        phone_label.pack()
+        phone_label = Label(self, text="Phone: ", width="30")
+        phone_label.grid(row=3, column=0, pady=10)
 
         self.phone_entry = Entry(self, textvariable=phone)
-        self.phone_entry.pack()
+        self.phone_entry.grid(row=3, column=1, pady=10)
 
         # Email
-        email_label = Label(self, text="Email *", width="30")
-        email_label.pack()
+        email_label = Label(self, text="Email: ", width="30")
+        email_label.grid(row=4, column=0, pady=10)
 
         self.email_entry = Entry(self, textvariable=email)
-        self.email_entry.pack()
+        self.email_entry.grid(row=4, column=1, pady=10)
 
         # Amount limit
-        amount_limit_label = Label(self, text="Amount limit *", width="30")
-        amount_limit_label.pack()
+        amount_limit_label = Label(self, text="Amount limit: ", width="30")
+        amount_limit_label.grid(row=5, column=0, pady=10)
 
         self.amount_limit_entry = Entry(self, textvariable=amount_limit)
-        self.amount_limit_entry.pack()
+        self.amount_limit_entry.grid(row=5, column=1, pady=10)
         
-        Label(self, text="").pack()
+        Label(self, text="").grid(row=6, column=2, pady=10)
 
-        login_btn = Button(self, text="Sign in", height="1", width="17", 
+        ## Credit card
+        title_label = Label(self, text="Card", font=LARGE_FONT)
+        title_label.grid(row=0, column=2, pady=10, padx=40)
+
+        # Card number
+
+        self.card_entry = EntryWithPlaceholder(self, placeholder="CARD NUMBER")
+        self.card_entry.grid(row=1, column=2, pady=10, padx=15)
+
+        # Exp month
+        self.month_entry = EntryWithPlaceholder(self, placeholder="EXP MONTH")
+        self.month_entry.grid(row=2, column=2, pady=10, padx=15)
+
+        # EXP YEAR
+        self.year_entry = EntryWithPlaceholder(self, placeholder="EXP YEAR")
+        self.year_entry.grid(row=3, column=2, pady=10, padx=15)
+
+        # CVV
+        self.cvv_entry = EntryWithPlaceholder(self, placeholder="CVV")
+        self.cvv_entry.grid(row=4, column=2, pady=10, padx=15)
+
+
+        login_btn = Button(self, text="Sign in", height="1", 
             command=self.register)
-        login_btn.pack()
+        login_btn.grid(row=7, column=0, pady=10)
 
         register_btn = Button(self, text="Back to Login",
             command=lambda: controller.show_frame(UserLogin))
-        register_btn.pack(side=RIGHT, padx=5, pady=5)
+        register_btn.grid(row=7, column=3, padx=0, pady=10)
     
     def register(self):
         username = self.username_entry.get()
@@ -356,6 +405,12 @@ class UserRegister(Frame):
         email = self.email_entry.get()
         amount_limit = self.amount_limit_entry.get()
         ip_address = getipaddress()
+
+        # Credit card number
+        card_number = self.card_entry.get()
+        month = self.month_entry.get()
+        year = self.year_entry.get()
+        cvv = self.cvv_entry.get()
 
         if username and password and phone and email and amount_limit and ip_address:
             try:
@@ -367,13 +422,24 @@ class UserRegister(Frame):
                     amount_limit=amount_limit,
                     ip_address=ip_address)
                 user.save()
+                ucard = UserCard(
+                    user=user,
+                    credit_card_number=card_number,
+                    exp_month=int(month),
+                    exp_year=int(year),
+                    cvv=cvv
+                )
+                ucard.save()
 
                 self.username_entry.delete(0, END)
                 self.password_entry.delete(0, END)
                 self.phone_entry.delete(0, END)
                 self.email_entry.delete(0, END)
                 self.amount_limit_entry.delete(0, END)
-                self.ip_address_entry.delete(0, END)
+                self.card_entry.delete(0, END)
+                self.year_entry.delete(0, END)
+                self.month_entry.delete(0, END)
+                self.cvv_entry.delete(0, END)
 
             except Exception as e:
                 print("Some fields could't be totally validated or...")
