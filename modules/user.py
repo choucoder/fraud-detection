@@ -156,13 +156,13 @@ class MenuBar(tk.Frame):
         button.pack()
 
     def view_transaction_history(self):
-        width, height = (1200, 256)
+        width, height = (800, 256)
 
         window = tk.Toplevel(self.controller)
         window.title("Transaction history")
         window.geometry(f"{width}x{height}")
 
-        cols = ('Username', 'Email', 'Product Name', 'Cost', 'IP Address', 'DATE')
+        cols = ('Product Name', 'Cost', 'IP Address', 'DATE')
 
         listBox = ttk.Treeview(window, columns=cols, show='headings')
 
@@ -172,7 +172,6 @@ class MenuBar(tk.Frame):
 
         for history in TransactionHistory.objects.filter(user=session2['user']):
             listBox.insert("", "end", values=(
-                history.user.username, history.user.email_id,
                 history.product.product_name, history.cost,
                 history.ip_address, history.created_at
             ))
@@ -257,6 +256,7 @@ class MenuBar(tk.Frame):
         buy_button = Button(buywin, text="Buy", command=self.finish_buying)
         buy_button.pack()
 
+        self.buywin = buywin
         buywin.lift()
 
     def finish_buying(self):
@@ -282,6 +282,7 @@ class MenuBar(tk.Frame):
                     transaction.save()
                     print(f"{user} buy product with id {product} using credit card {credit_card}")
                     PopUp("Transaction completed correctly.")
+                    self.buywin.destroy()
                 except Exception:
                     PopUp("Transaction failed. Verify your data and try again.")
             else:
@@ -294,7 +295,7 @@ class MenuBar(tk.Frame):
                     times -= 1
                     PopUp(f"Credit card number wrong, you have {times} intents")
 
-        self.credit_card_entry.delete(0, END)
+        # self.credit_card_entry.delete(0, END)
         
 # User views
 class UserLogin(Login):
