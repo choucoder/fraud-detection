@@ -1,6 +1,10 @@
 *.docx
+*.jpg
+*.jpeg
+*.png
 *.mp4
 app/
+images/
 .vscode/
 __pycache__/
 *.sqlite3

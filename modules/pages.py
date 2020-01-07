@@ -1,6 +1,22 @@
-from tkinter import (Frame, Label, Button)
+from tkinter import (Frame, Label, Button, Toplevel)
 
 LARGE_FONT = ("Verdana", 12)
+
+class PopUp(Toplevel):
+
+    def __init__(self, message, width=400, height=200):
+        super().__init__()
+        self.title("Message")
+        self.geometry(f"{width}x{height}")
+        self.attributes("-topmost", True)
+
+        space = Label(self, text='', height='5')
+        space.pack()
+
+        label = Label(self, text=message)
+        label.pack()
+
+        self.lift()
 
 class MainPage(Frame):
 

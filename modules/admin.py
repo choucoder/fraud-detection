@@ -2,12 +2,13 @@ import os
 import django
 import tkinter as tk
 from tkinter import *
+from tkinter import filedialog
 from tkinter import ttk
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mogli.settings')
 django.setup()
 
-from .pages import MainPage
+from .pages import MainPage, PopUp
 from mogli.models import Admin as AdminModel
 from mogli.models import User, Product, TransactionHistory
 
@@ -92,7 +93,7 @@ class MenuBar(tk.Frame):
             ))
 
     def create_product(self):
-        width, height = (310, 250)
+        width, height = (400, 250)
 
         window = tk.Toplevel(self.controller)
         window.title("Create New Product")
@@ -102,12 +103,14 @@ class MenuBar(tk.Frame):
         self.product_name = StringVar()
         self.cost = StringVar()
         self.image = StringVar()
+        self.info_image = StringVar()
+        self.filename = ""
 
         id_label = Label(window, text="Product ID: ")
         id_label.grid(row=2, column=0)
 
         self.id_entry = Entry(window, textvariable=self.product_id)
-        self.id_entry.grid(row=2, column=1, pady=10)
+        self.id_entry.grid(row=2, column=1, columnspan=3, pady=10)
 
         name_label = Label(window, text="Name: ")
         name_label.grid(row=5, column=0, pady=10)
@@ -121,11 +124,14 @@ class MenuBar(tk.Frame):
         self.cost_entry = Entry(window)
         self.cost_entry.grid(row=7, column=1, pady=10)
 
-        image_label = Label(window, text="Image: ")
-        image_label.grid(row=9, column=0, pady=10)
+        # image_label = Label(window, text="Image: ")
+        # image_label.grid(row=9, column=0, pady=10)
 
-        self.image_entry = Entry(window)
+        self.image_entry = Button(window, text="Upload image", command=self.UploadAction)
         self.image_entry.grid(row=9, column=1, pady=10)
+
+        self.info_image_label = Label(window, textvariable=self.info_image)
+        self.info_image_label.grid(row=10, column=1)
 
         create_button = Button(window, text="Create", command=self.save_product)
         create_button.grid(row=12, column=1, pady=20)
@@ -133,11 +139,28 @@ class MenuBar(tk.Frame):
         self.info_label = Label(window, text="")
         self.info_label.grid(row=13, column=1, pady=5)
 
+    def UploadAction(self):
+        self.filename = filedialog.askopenfilename()
+        name = self.filename.split('/')[-1]
+        extension = name.split('.')[-1]
+        print(f"Extension: {extension}")
+
+        if extension not in ['jpg', 'png', 'jpeg']:
+            PopUp("File must be an image")
+        else:
+            self.info_image.set(name)
+            print(f"Filename: {self.filename}")
+        print(os.getcwd())
+
     def save_product(self):
         _id = self.id_entry.get()
         name = self.name_entry.get()
         cost = self.cost_entry.get()
-        image = self.image_entry.get()
+        image = self.filename
+
+        image_folder = os.path.join(os.getcwd(), 'images')
+        if not os.path.exists(image_folder):
+            os.mkdir(image_folder)
 
         if _id and name and cost and image:
             product = Product(
@@ -148,11 +171,11 @@ class MenuBar(tk.Frame):
             self.id_entry.delete(0, END)
             self.name_entry.delete(0, END)
             self.cost_entry.delete(0, END)
-            self.image_entry.delete(0, END)
+            self.info_image.set("")
 
-            print(f"Product {name} registered correctly")
+            PopUp(f"Product {name} registered correctly")
         else:
-            print("Empty inputs")
+            PopUp("Empty fields")
 
 class MainView(tk.Frame):
 
